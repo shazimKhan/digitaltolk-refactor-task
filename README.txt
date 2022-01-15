@@ -5,7 +5,7 @@ Code to refactor
 1) app/Http/Controllers/BookingController.php
 2) app/Repository/BookingRepository.php
 
-I have categorized my code opinion into three parts which is following
+I have categorized my code opinion into four parts which is following
 
 Best thing : It has a repository system which is best practice to understand and accesss the then things easily, also it follows the complete oop standard that I liked it
 
