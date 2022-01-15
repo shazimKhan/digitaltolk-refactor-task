@@ -3,7 +3,7 @@
 namespace DTApi\Http\Controllers;
 
 use DTApi\Models\Job;
-use DTApi\Http\Requests; 
+// use DTApi\Http\Requests; 
 use DTApi\Models\Distance;
 use Illuminate\Http\Request;
 use DTApi\Repository\BookingRepository;
@@ -67,7 +67,7 @@ class BookingController extends Controller
     {
         $data = $request->all();
 
-        $response = $this->repository->store($request->__authenticatedUser, $data);
+        $response = $this->repository->store($data['__authenticatedUser'], $data);
 
         return response($response);
 
@@ -80,9 +80,9 @@ class BookingController extends Controller
      */
     public function update($id, Request $request)
     {
-        $data = $request->all();
-        $cuser = $request->__authenticatedUser;
-        $response = $this->repository->updateJob($id, array_except($data, ['_token', 'submit']), $cuser);
+        $data = $request->except('_token','submit');
+        // $cUser = $data['__authenticatedUser']; we can directly access it from data array for code reducibility but it you want to understand the clear usage of this method then you can use by current initialization
+        $response = $this->repository->updateJob($id,$data,$data['__authenticatedUser']);
 
         return response($response);
     }
@@ -93,7 +93,7 @@ class BookingController extends Controller
      */
     public function immediateJobEmail(Request $request)
     {
-        $adminSenderEmail = config('app.adminemail');
+        // $adminSenderEmail = config('app.adminemail'); unused line 
         $data = $request->all();
 
         $response = $this->repository->storeJobEmail($data);
@@ -107,9 +107,9 @@ class BookingController extends Controller
      */
     public function getHistory(Request $request)
     {
-        if($user_id = $request->get('user_id')) {
+        if($userId = $request->get('user_id')) {
 
-            $response = $this->repository->getUsersJobsHistory($user_id, $request);
+            $response = $this->repository->getUsersJobsHistory($userId, $request);
             return response($response);
         }
 
@@ -123,7 +123,7 @@ class BookingController extends Controller
     public function acceptJob(Request $request)
     {
         $data = $request->all();
-        $user = $request->__authenticatedUser;
+        $user = $data['__authenticatedUser'];
 
         $response = $this->repository->acceptJob($data, $user);
 
@@ -147,7 +147,7 @@ class BookingController extends Controller
     public function cancelJob(Request $request)
     {
         $data = $request->all();
-        $user = $request->__authenticatedUser;
+        $user =  $data['__authenticatedUser'];
 
         $response = $this->repository->cancelJobAjax($data, $user);
 
@@ -184,7 +184,7 @@ class BookingController extends Controller
      */
     public function getPotentialJobs(Request $request)
     {
-        $data = $request->all();
+        // $data = $request->all(); unused
         $user = $request->__authenticatedUser;
 
         $response = $this->repository->getPotentialJobs($user);
@@ -266,8 +266,8 @@ class BookingController extends Controller
     {
         $data = $request->all();
         $job = $this->repository->find($data['jobid']);
-        $job_data = $this->repository->jobToData($job);
-        $this->repository->sendNotificationTranslator($job, $job_data, '*');
+        $jobData = $this->repository->jobToData($job);
+        $this->repository->sendNotificationTranslator($job, $jobData, '*');
 
         return response(['success' => 'Push sent']);
     }
@@ -281,10 +281,10 @@ class BookingController extends Controller
     {
         $data = $request->all();
         $job = $this->repository->find($data['jobid']);
-        $job_data = $this->repository->jobToData($job);
+        $jobData = $this->repository->jobToData($job);
 
         try {
-            $this->repository->sendSMSNotificationToTranslator($job);
+            $this->repository->sendSMSNotificationToTranslator($jobData);
             return response(['success' => 'SMS sent']);
         } catch (\Exception $e) {
             return response(['success' => $e->getMessage()]);
